@@ -95,7 +95,9 @@ pub struct IterTake<'a, T> {
 	inner: NonNull<Vec<T>>,
 	index: usize,
 
-	/// NOTE: this is needed to stop multiple `Take`s from aliasing
+	/// # Invariant
+	/// NOTE: This is needed to stop multiple `Take`s from aliasing
+	/// Must be set to `true` before a new [`Take`] is produced, and should be set to `false` when said [`Take`] is consumed
 	panic: bool,
 
 	_item: PhantomData<&'a mut T>,
@@ -126,9 +128,10 @@ impl<'a, T: 'a> Iterator for IterTake<'a, T> {
 	/// let mut i = v.iter_take();
 	///
 	/// let a = i.next().unwrap();
-	/// let b = i.next().unwrap();
 	///
-	/// assert_eq!(&*a, &*b);
+	/// // this would alias with `a` but we panic instead
+	/// // drop(a); // uncomment to remove panic
+	/// let b = i.next().unwrap();
 	/// ```
 	fn next(&mut self) -> Option<Self::Item> {
 		if self.panic {
@@ -248,9 +251,9 @@ mod tests {
 		let mut v = vec![0, 1, 2, 3, 4];
 		let mut i = v.iter_take();
 
-		let a = i.next().unwrap();
-		let b = i.next().unwrap();
+		let _a = i.next().unwrap();
+		let _b = i.next().unwrap();
 
-		assert_eq!(&*a, &*b);
+		panic!("unsound");
 	}
 }
