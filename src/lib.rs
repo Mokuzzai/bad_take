@@ -135,7 +135,7 @@ impl<'a, T: 'a> Iterator for IterTake<'a, T> {
 	/// ```
 	fn next(&mut self) -> Option<Self::Item> {
 		if self.panic {
-			panic!("called `IterTake::next` without destroying `Take` first")
+			panic!("called `IterTake::next` without consuming `Take` first")
 		}
 
 		if self.index == unsafe { self.inner.as_ref().len() } {
